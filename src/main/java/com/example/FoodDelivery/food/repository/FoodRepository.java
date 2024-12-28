@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface FoodRepository extends CrudRepository<Food, Long> {
     List<Food> findAll();
+
+    List<Food> findByIdIn(List<Long> foodIds);
 }

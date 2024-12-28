@@ -1,10 +1,13 @@
 package com.example.FoodDelivery.food.model;
 
+import com.example.FoodDelivery.order.model.Order;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -33,6 +36,14 @@ public class Food {
 
     @Column(nullable = false)
     private Boolean available;
+
+    @ManyToMany
+    @JoinTable(
+            name = "food_order",
+            joinColumns = @JoinColumn(name = "food_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private List<Order> orders;
 
     @Version
     private Long version;

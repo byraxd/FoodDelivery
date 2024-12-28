@@ -4,6 +4,8 @@ import com.example.FoodDelivery.food.dto.FoodDto;
 import com.example.FoodDelivery.food.model.Food;
 import com.example.FoodDelivery.food.repository.FoodRepository;
 import com.example.FoodDelivery.food.service.FoodService;
+import jakarta.persistence.OptimisticLockException;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +16,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
+@Slf4j
 public class FoodServiceImpl implements FoodService {
 
     private final FoodRepository foodRepository;
-    private static final Logger log = LoggerFactory.getLogger(FoodServiceImpl.class);
 
     @Autowired
     public FoodServiceImpl(FoodRepository foodRepository) {
@@ -73,18 +75,22 @@ public class FoodServiceImpl implements FoodService {
         validateId(id);
         validateFoodDto(foodDto);
 
-        Food food = foodRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Food not found with following id: " + id));
+        try {
+            Food food = foodRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Food not found with following id: " + id));
 
-        food.setName(foodDto.name());
-        food.setFoodType(foodDto.foodType());
-        food.setDescription(foodDto.description());
-        food.setPrice(foodDto.price());
-        food.setAvailable(foodDto.available());
+            food.setName(foodDto.name());
+            food.setFoodType(foodDto.foodType());
+            food.setDescription(foodDto.description());
+            food.setPrice(foodDto.price());
+            food.setAvailable(foodDto.available());
 
-        foodRepository.save(food);
-        log.info("Updated food with id {}: {}", food.getId(), food);
+            foodRepository.save(food);
+            log.info("Updated food with id {}: {}", food.getId(), food);
 
-        return food;
+            return food;
+        } catch (OptimisticLockException e) {
+            throw new OptimisticLockException("Another user updated this record already", e);
+        }
     }
 
     @Override
